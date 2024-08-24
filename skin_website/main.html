@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #bdcad790;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 80vh;
+            margin: 0;
+            flex-direction: column;
+            text-align: center;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 80%;
+            height: auto;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results, #recommendations {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .recommendations img {
+            max-width: 100px;
+            height: auto;
+            vertical-align: middle;
+        }
+        .recommendations .product {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <img src="images2.jpg" alt="Descriptive Alt Text">
+    
+    <h2 class="sm-heading">
+        <span class="text">
+            <h1>Beauty Lies Within Us</h1>
+            <h3>Get your skin analyzed with us</h3>
+        </span>   
+    </h2>
+    <div class="container">
+        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+        <button id="imageUploadButton">Upload Image</button>
+        <button id="analyzeButton">Analyze Skin Type</button>
+        <button id="navigateToPatientButton">Go to Patient Form</button>
+        <button id="navigateToPatientListButton">View Patient List</button>
+        <button id="navigateToProductsButton">View Recommended Products</button>
+        <button id="logoutButton" onclick="logout()">Logout</button>
+        <div id="results"></div>
+        <div id="recommendations"></div>
+    </div>
+    <script>
+        // Check if the user is logged in
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+
+        // Handle navigation to patient form
+        document.getElementById('navigateToPatientButton').addEventListener('click', function() {
+            window.location.href = 'patient.html';
+        });
+
+        // Handle navigation to patient list
+        document.getElementById('navigateToPatientListButton').addEventListener('click', function() {
+            window.location.href = 'patient_list.html';
+        });
+
+        // Handle navigation to products page
+        document.getElementById('navigateToProductsButton').addEventListener('click', function() {
+            window.location.href = 'products.html';
+        });
+
+        // Handle image upload and analysis
+        let uploadedImageData = null;
+
+        document.getElementById('imageUploadButton').addEventListener('click', function() {
+            document.getElementById('imageUpload').click();
+        });
+
+        document.getElementById('imageUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageData = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('analyzeButton').addEventListener('click', function() {
+            if (uploadedImageData) {
+                analyzeImage(uploadedImageData);
+            } else {
+                alert('Please upload an image first.');
+            }
+        });
+
+        function analyzeImage(imageData) {
+            // Simulate image analysis and generate a report
+            const isOily = Math.random() > 0.5; // Randomly decide skin type for demonstration
+
+            document.getElementById('results').innerHTML = `
+                <h3>Analysis Report</h3>
+                <p>Skin condition: ${isOily ? 'Oily' : 'Dry'}</p>
+                <p>Recommended Treatments: ${isOily ? 'Salicylic acid and Oil-free Moisturizer' : 'Hyaluronic acid and Rich Moisturizer'}</p>
+            `;
+
+            // Simulate recommendations based on analysis
+            document.getElementById('recommendations').innerHTML = `
+                <h3>Recommended Products</h3>
+                <div class="recommendations">
+                    <div class="product">
+                        <span>${isOily ? 'Salicylic Acid - $20' : 'Hyaluronic Acid - $25'}</span>
+                    </div>
+                    <div class="product">
+                        <span>${isOily ? 'Oil-Free Moisturizer - $15' : 'Rich Moisturizer - $20'}</span>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
+

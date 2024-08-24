@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+        }
+        .wrapper {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 800px;
+            position: relative;
+        }
+        .title {
+            font-size: 1.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .upload-button {
+            display: block;
+            margin: 1rem auto;
+            padding: 0.75rem 1.5rem;
+            background-color: #17a2b8;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .upload-button:hover {
+            background-color: #138496;
+        }
+        .back-button, .next-button {
+            display: block;
+            margin: 1rem auto;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-button:hover, .next-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="title">Patient List</div>
+        <table id="patientTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patientList"></tbody>
+        </table>
+        <button class="upload-button" onclick="exportToExcel()">Export to Excel</button>
+        <button class="back-button" onclick="window.location.href='main.html';">Back to Main Page</button>
+        <button class="next-button" onclick="window.location.href='main.html';">Next</button>
+    </div>
+    <script>
+        function displayPatientList() {
+            const patientListTbody = document.getElementById('patientList');
+            const patientList = JSON.parse(localStorage.getItem('patientList')) || [];
+
+            console.log(patientList); // Debugging line to check the data structure
+
+            if (patientList.length > 0) {
+                patientListTbody.innerHTML = patientList.map(patient => `
+                    <tr>
+                        <td>${patient.id || 'N/A'}</td>
+                        <td>${patient.name || 'N/A'}</td>
+                        <td>${patient.age || 'N/A'}</td>
+                        <td>${patient.date || 'N/A'}</td>
+                        <td>
+                            <input type="file" id="file-${patient.id}" class="upload-input" style="display: none;" />
+                            <button class="upload-button" onclick="document.getElementById('file-${patient.id}').click();">Choose File</button>
+                            <button class="analyze-button" onclick="analyzePatient(${patient.id})">Analyze</button>
+                            <button class="capture-button" onclick="captureFaceImage(${patient.id})">Capture Face Image</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                patientListTbody.innerHTML = '<tr><td colspan="5">No patient details available.</td></tr>';
+            }
+        }
+
+        function analyzePatient(id) {
+            const patientList = JSON.parse(localStorage.getItem('patientList')) || [];
+            const patient = patientList.find(p => p.id === id);
+            if (patient) {
+                alert(`Analyzing patient: ${patient.name}`);
+                // Redirect to main.html after showing the alert
+                window.location.href = 'main.html';
+            }
+        }
+
+        function captureFaceImage(id) {
+            const patientList = JSON.parse(localStorage.getItem('patientList')) || [];
+            const patient = patientList.find(p => p.id === id);
+            if (patient) {
+                alert(`Capturing face image for patient: ${patient.name}`);
+                // Add your capture code here
+                fetch('http://<your-rpi-ip>:<port>/capture')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Face image captured successfully!');
+                        } else {
+                            alert('Failed to capture face image.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error occurred.');
+                    });
+            }
+        }
+
+        function exportToExcel() {
+            const patientList = JSON.parse(localStorage.getItem('patientList')) || [];
+            if (patientList.length === 0) {
+                alert('No patient data available to export.');
+                return;
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(patientList.map(patient => ({
+                ID: patient.id,
+                Name: patient.name,
+                Age: patient.age,
+                Date: patient.date
+            })));
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Patient List');
+            XLSX.writeFile(workbook, 'Patient_List.xlsx');
+        }
+
+        document.addEventListener('DOMContentLoaded', displayPatientList);
+    </script>
+</body>
+</html>
